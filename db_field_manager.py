@@ -21,6 +21,10 @@ class FieldManager:
         for k, v in self._dict.items():
             self.search_idx[v["name"]] = k
 
+    def get_drop_down_list(self):
+        """Get drop down list for the field."""
+        return [v["name"] for k, v in self._dict.items()]
+
 
 class CountryFieldManager(FieldManager):
     def __init__(self) -> None:
