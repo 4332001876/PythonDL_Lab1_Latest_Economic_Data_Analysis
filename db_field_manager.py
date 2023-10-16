@@ -9,23 +9,30 @@ import os
 class FieldManager:
     def __init__(self) -> None:
         self._dict = {}
+        self.search_idx = {}
         self.crawler = Crawler()
 
     def search(self, keyword):
-        """Search for keyword in the list."""
-        return
+        """Search for keyword in the dict."""
+        return self.search_idx[keyword]
+
+    def get_search_idx(self):
+        """Get search index."""
+        for k, v in self._dict.items():
+            self.search_idx[v["name"]] = k
 
 
 class CountryFieldManager(FieldManager):
     def __init__(self) -> None:
         super().__init__()
-        self._dict = self.get_countries_list()
+        self.get_countries_list()
+        self.get_search_idx()
 
     def get_countries_list(self):
         if os.path.exists(Config.COUNTRIES_LIST_PATH):
             # 如果已经存在国家列表文件，则直接读取
             self._dict = json.load(open(Config.COUNTRIES_LIST_PATH, "r"))
-            print("Countries list loaded from cached local file.")
+            print("Countries list loaded from local cached file.")
             print("Countries list length: ", len(self._dict))
         else:
             # 如果不存在国家列表文件，则在线获取
@@ -59,7 +66,8 @@ class CountryFieldManager(FieldManager):
 class IndicatorFieldManager(FieldManager):
     def __init__(self) -> None:
         super().__init__()
-        self._dict = self.get_indicators_list()
+        self.get_indicators_list()
+        self.get_search_idx()
 
     def get_indicators_list(self):
         # GDP总量
@@ -77,3 +85,4 @@ class IndicatorFieldManager(FieldManager):
             "name": "GDP per capita (constant LCU)"}
         self._dict["NY.GDP.PCAP.KD"] = {
             "name": "GDP per capita (constant 2015 US$)"}
+        return self._dict
