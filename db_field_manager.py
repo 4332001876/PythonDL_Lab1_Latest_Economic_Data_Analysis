@@ -19,6 +19,18 @@ class FieldManager:
 class CountryFieldManager(FieldManager):
     def __init__(self) -> None:
         super().__init__()
+        self._dict = self.get_countries_list()
+
+    def get_countries_list(self):
+        if os.path.exists(Config.COUNTRIES_LIST_PATH):
+            # 如果已经存在国家列表文件，则直接读取
+            self._dict = json.load(open(Config.COUNTRIES_LIST_PATH, "r"))
+            print("Countries list loaded from cached local file.")
+            print("Countries list length: ", len(self._dict))
+        else:
+            # 如果不存在国家列表文件，则在线获取
+            self._dict = self.get_countries_list_online()
+        return self._dict
 
     def get_countries_list_online(self):
         """Get countries list latest updated."""
@@ -42,3 +54,26 @@ class CountryFieldManager(FieldManager):
         os.makedirs(Config.TMP_PATH, exist_ok=True)
         json.dump(self._dict, open(Config.COUNTRIES_LIST_PATH, "w"))
         return self._dict
+
+
+class IndicatorFieldManager(FieldManager):
+    def __init__(self) -> None:
+        super().__init__()
+        self._dict = self.get_indicators_list()
+
+    def get_indicators_list(self):
+        # GDP总量
+        self._dict["NY.GDP.MKTP.CN"] = {
+            "name": "GDP (current Local Currency Units)"}
+        self._dict["NY.GDP.MKTP.CD"] = {"name": "GDP (current US$)"}
+        self._dict["NY.GDP.MKTP.KN"] = {
+            "name": "GDP (constant Local Currency Units)"}
+        self._dict["NY.GDP.MKTP.KD"] = {"name": "GDP (constant 2015 US$)"}
+
+        # 人均GDP
+        self._dict["NY.GDP.PCAP.CN"] = {"name": "GDP per capita (current LCU)"}
+        self._dict["NY.GDP.PCAP.CD"] = {"name": "GDP per capita (current US$)"}
+        self._dict["NY.GDP.PCAP.KN"] = {
+            "name": "GDP per capita (constant LCU)"}
+        self._dict["NY.GDP.PCAP.KD"] = {
+            "name": "GDP per capita (constant 2015 US$)"}
