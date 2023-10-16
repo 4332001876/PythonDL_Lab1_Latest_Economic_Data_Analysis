@@ -10,8 +10,8 @@ class Crawler:
         pass
 
     def fetch_data(self, url):
-        # sleep for n second to avoid being blocked
-        time.sleep(Config.SLEEP_TIME)
+        """Fetch data from url."""
+        time.sleep(Config.SLEEP_TIME)  # sleep for n second to avoid being blocked
         headers = {"User-Agent": Config.USER_AGENT, 'Cookie': Config.COOKIE}
         response = requests.get(url, headers=headers)
         return response.text
