@@ -2,6 +2,7 @@ from db_field_manager import CountryFieldManager, IndicatorFieldManager
 from crawler import Crawler
 
 import xml.etree.ElementTree as ET
+import pandas as pd
 
 BASE_URL = "https://api.worldbank.org/v2"
 COUNTRIES_URL_PART = "/countries"
@@ -14,23 +15,31 @@ class WbDataInterface:
         self.indicator_field_manager = IndicatorFieldManager()
         self.crawler = Crawler()
 
-    def get_url(self, country_name, indicator_name):
+    def _get_url(self, country_name, indicator_name):
         url = BASE_URL + \
             COUNTRIES_URL_PART + "/" + self.country_field_manager.search(country_name) + \
             INDICATOR_URL_PART + "/" + \
             self.indicator_field_manager.search(indicator_name)
         return url
 
-    def get_data(self, country_name, indicator_name):
+    def get_data(self, country_name, indicator_name) -> pd.DataFrame:
+        """Get data from world bank api by country name and indicator name."""
+        df_rows = []
+
         # 获取数据xml
-        url = self.get_url(country_name, indicator_name)
+        url = self._get_url(country_name, indicator_name)
         xml = self.crawler.fetch_data(url)
         xml = xml[xml.find("<"):]
 
         # 解析xml
         root = ET.fromstring(xml)
         for data in root:
-            data_date = data[3].text
-            data_value = data[4].text
-            print(data_date, data_value)
-
+            data_year = int(data[3].text)
+            if data[4].text is not None:
+                data_value = float(data[4].text)
+                # print(data_year, data_value)
+                df_rows.append(
+                    {"Year": data_year, "GDP": data_value})
+        df = pd.DataFrame(df_rows)
+        df = df.sort_values(by=["Year"], ascending=False)
+        return df
