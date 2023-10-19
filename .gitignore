@@ -2,5 +2,6 @@ tmp
 *.pdf
 *.doc
 *.docx
+*.mp4
 
 *.pyc
