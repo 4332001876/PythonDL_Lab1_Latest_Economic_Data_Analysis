@@ -7,6 +7,8 @@ import os
 
 
 class FieldManager:
+    """Used for managing the retrieval and searching of options within a field."""
+
     def __init__(self) -> None:
         self._dict = {}
         self.search_idx = {}
@@ -27,6 +29,8 @@ class FieldManager:
 
 
 class CountryFieldManager(FieldManager):
+    """Used for managing the country name list."""
+
     def __init__(self) -> None:
         super().__init__()
         self.get_countries_list()
@@ -34,22 +38,23 @@ class CountryFieldManager(FieldManager):
 
     def get_countries_list(self):
         if os.path.exists(Config.COUNTRIES_LIST_PATH):
-            # 如果已经存在国家列表文件，则直接读取
+            # if the country list file already exists, read it directly
             self._dict = json.load(open(Config.COUNTRIES_LIST_PATH, "r"))
             print("Countries list loaded from local cached file.")
             print("Countries list length: ", len(self._dict))
         else:
-            # 如果不存在国家列表文件，则在线获取
+            # if the country list file does not exist, get it online
             self._dict = self.get_countries_list_online()
         return self._dict
 
     def get_countries_list_online(self):
         """Get countries list latest updated."""
-        url = "https://api.worldbank.org/v2/countries?per_page=5000"  # 目前的国家与地区数目为297个，远小于5000
-        content = self.crawler.fetch_data(url)  # 获取内容为XML格式
-        content = content[content.find("<"):]  # 去除XML内容前的非法字符
+        url = "https://api.worldbank.org/v2/countries?per_page=5000"  # the total number of countries and regions is 297, far less than 5000
+        content = self.crawler.fetch_data(url)  # get content in XML format
+        # remove illegal characters before XML content
+        content = content[content.find("<"):]
 
-        # 解析XML内容
+        # parse XML content to get country info
         root = ET.fromstring(content)
         for country in root:
             country_id = country.attrib["id"]
@@ -57,24 +62,26 @@ class CountryFieldManager(FieldManager):
             country_name = country[1].text
             # print(country_id, iso2Code, country_name)
 
-            # 将国家信息存入dict
+            # save country info to dict
             self._dict[country_id] = {
                 "iso2Code": iso2Code, "name": country_name}
 
-        # 将dict存入json文件
+        # save country info to json file
         os.makedirs(Config.TMP_PATH, exist_ok=True)
         json.dump(self._dict, open(Config.COUNTRIES_LIST_PATH, "w"))
         return self._dict
 
 
 class IndicatorFieldManager(FieldManager):
+    """Used for managing the indicator name list."""
+
     def __init__(self) -> None:
         super().__init__()
         self.get_indicators_list()
         self.get_search_idx()
 
     def get_indicators_list(self):
-        # GDP总量
+        # GDP
         self._dict["NY.GDP.MKTP.CN"] = {
             "name": "GDP (current Local Currency Units)"}
         self._dict["NY.GDP.MKTP.CD"] = {"name": "GDP (current US$)"}
@@ -82,7 +89,7 @@ class IndicatorFieldManager(FieldManager):
             "name": "GDP (constant Local Currency Units)"}
         self._dict["NY.GDP.MKTP.KD"] = {"name": "GDP (constant 2015 US$)"}
 
-        # 人均GDP
+        # GDP per capita
         self._dict["NY.GDP.PCAP.CN"] = {"name": "GDP per capita (current LCU)"}
         self._dict["NY.GDP.PCAP.CD"] = {"name": "GDP per capita (current US$)"}
         self._dict["NY.GDP.PCAP.KN"] = {
