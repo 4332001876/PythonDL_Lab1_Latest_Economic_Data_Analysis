@@ -1,6 +1,6 @@
 tmp
 *.pdf
 *.doc
-*.docs
+*.docx
 
 *.pyc
